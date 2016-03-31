@@ -60,3 +60,18 @@ class crawler:
             print "Could not open %s" % page
             continue
           soup = BeautifulSoup(c.read())
+          self.addtoindex(page, soup)
+
+          links = soup('a')
+          for link in links:
+            if ('href' in dict(link.attrs)):
+              url = urljoin(page, link['href'])
+              if url.find("'")!=-1: continue
+                url = url.split("#")[0] # アンカーを取り除く
+              if url[0:4]=='http' and not self.isindexed(url):
+                newpages.add(url)
+              linkText = self.gettextonly(link)
+              self.addlinkref(page, url, linkText)
+
+          self.dbcommit()
+        pages = newpages
