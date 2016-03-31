@@ -2,6 +2,7 @@
 import urllib2
 from bs4 import *
 from urlparse import urljoin
+import sqlite3 as sqlite
 
 # 無視すべき単語のリストをつくる
 ignorewords = set(['the', 'of', 'to', 'and', 'a', 'in', 'is', 'it'])
@@ -9,13 +10,13 @@ ignorewords = set(['the', 'of', 'to', 'and', 'a', 'in', 'is', 'it'])
 class crawler:
   # データベースの名前でクローラを初期化する
   def __init__(self, dbname):
-    pass
+    self.con = sqlite.connect(dbname)
 
   def __del__(self):
-    pass
+    self.con.close()
 
   def dbcommit(self):
-    pass
+    self.con.commit()
 
   # エントリIDを取得したり、それが存在しない場合には追加
   # するための補助関数
@@ -44,7 +45,17 @@ class crawler:
 
   # データベースのテーブルを作る
   def createindextables(self):
-   pass
+    self.con.execute('create table urllist(url)')
+    self.con.execute('create table wordlist(word)')
+    self.con.execute('create table wordlocation(urlid, wordid, location)')
+    self.con.execute('create table link(fromid integer, toid integer)')
+    self.con.execute('create table linkwords(wordid, linkid)')
+    self.con.execute('create index wordidx on wordlist(word)')
+    self.con.execute('create index urlidx on urllist(url)')
+    self.con.execute('create index wordurlidx on wordlocation(wordid)')
+    self.con.execute('create index urltoidx on link(toid)')
+    self.con.execute('create index urlfromidx on link(fromid)')
+    self.dbcommit()
 
   # ページのリストを受け取り、与えられた深さで幅優先の検索を行い
   # ページをインデクシングする
