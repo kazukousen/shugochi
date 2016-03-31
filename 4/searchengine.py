@@ -1,3 +1,10 @@
+import urllib2
+from bs4 import *
+from urlparse import urljoin
+
+# 無視すべき単語のリストをつくる
+ignorewords = set(['the', 'of', 'to', 'and', 'a', 'in', 'is', 'it'])
+
 class crawler:
   # データベースの名前でクローラを初期化する
   def __init__(self, dbname):
@@ -42,3 +49,14 @@ class crawler:
   # データベースのテーブルを作る
   def createindextables(self):
    pass
+
+  def crawl(self, pages, depth=2):
+    for i in range(depth):
+      newpages=set()
+        for page in pages:
+          try:
+            c=urllib2.urlopen(page)
+          except:
+            print "Could not open %s" % page
+            continue
+          soup = BeautifulSoup(c.read())
